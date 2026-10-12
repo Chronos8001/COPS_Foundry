@@ -1,0 +1,24 @@
+<div class="cops carte-jet degats">
+  <header>
+    <h3>{{cibleNom}} est touché</h3>
+    <span class="sous-titre">{{armeNom}} — {{locLabel}}</span>
+  </header>
+  <ul class="calcul">
+    <li>Puissance : <strong>{{degatsBruts}}</strong></li>
+    <li>Protection : <strong>−{{protection}}</strong>{{#if protectionNoms}} ({{protectionNoms}}){{/if}}</li>
+    {{#if arrete}}
+    <li class="arrete">La protection arrête tout : aucun dommage.</li>
+    {{else}}
+    {{#if degatsLoc}}<li>Localisation : <strong>+{{degatsLoc}}</strong></li>{{/if}}
+    {{/if}}
+  </ul>
+  <div class="issue">
+    <strong>{{total}} point(s) de dommages</strong>
+    <div>PV : {{pvAvant}} → {{pvApres}}</div>
+    {{#if massif}}<div class="note">Dommages massifs (≥ 15) : séquelle possible (règle optionnelle).</div>{{/if}}
+    {{#if mort}}<div class="note">Mort.</div>{{else if inconscient}}<div class="note">Inconscient : perd 1 PV par tour.</div>{{/if}}
+  </div>
+  <button type="button" data-cops-action="force-arret" data-actor="{{cibleUuid}}" data-difficulte="{{faDiff}}">
+    <i class="fa-solid fa-hand"></i> Jet de force d'arrêt (difficulté {{faDiff}})
+  </button>
+</div>

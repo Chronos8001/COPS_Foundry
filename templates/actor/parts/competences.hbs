@@ -1,0 +1,59 @@
+<div class="colonnes">
+  <div class="caracteristiques">
+    <h3>Caractéristiques <span class="total" title="21 points à la création">({{totalCaracs}})</span></h3>
+    <ol class="liste-caracs">
+      {{#each caracteristiques}}
+      <li class="carac">
+        <a class="rollable" data-jet-carac="{{key}}" title="Jet de {{label}} (seuil 6+)"><i class="fa-solid fa-dice-d10"></i> {{label}}</a>
+        <input type="number" name="system.caracteristiques.{{key}}" value="{{valeur}}" min="1" max="5" data-dtype="Number"/>
+      </li>
+      {{/each}}
+    </ol>
+    <p class="aide">
+      Nombre de dés = caractéristique. Seuil = niveau de compétence (6+ pour un jet de caractéristique).
+      Un 10 est une réussite critique : il compte et se relance.
+    </p>
+  </div>
+
+  <div class="competences-liste">
+    <h3>Compétences</h3>
+    <table>
+      <thead><tr><th>Compétence</th><th>Car.</th><th>Niveau</th><th>Spécialisation</th></tr></thead>
+      <tbody>
+        {{#each competences}}
+        <tr class="competence {{#unless acquise}}non-acquise{{/unless}}">
+          <td>
+            <a class="rollable" data-jet-competence="{{key}}"><i class="fa-solid fa-dice-d10"></i> {{label}}</a>
+            {{#if adrenaline}}<i class="fa-solid fa-bolt adr" title="Adrénaline utilisable"></i>{{/if}}
+          </td>
+          <td class="carac-abbr">{{carac}}</td>
+          <td>
+            <select name="system.competences.{{key}}.valeur" data-dtype="Number">
+              {{selectOptions @root.COPS.niveaux selected=valeur valueAttr="value" labelAttr="label"}}
+            </select>
+          </td>
+          <td>
+            <input type="text" name="system.competences.{{key}}.specialisation" value="{{specialisation}}"
+                   class="{{#if speRequise}}spe-requise{{/if}}" title="{{speTitre}}"/>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{{#if estCop}}
+<h3>Stages suivis</h3>
+<ol class="item-list">
+  {{#each stages}}
+  <li class="item flexrow" data-item-id="{{id}}">
+    <img src="{{img}}" width="24" height="24"/>
+    <span class="item-name">{{name}} (niv. {{system.niveau}})</span>
+    <a class="item-control" data-item-edit title="Modifier"><i class="fa-solid fa-pen"></i></a>
+    <a class="item-control" data-item-delete title="Supprimer"><i class="fa-solid fa-trash"></i></a>
+  </li>
+  {{/each}}
+</ol>
+<a class="ajouter" data-item-create="stage"><i class="fa-solid fa-plus"></i> Ajouter un stage</a>
+{{/if}}

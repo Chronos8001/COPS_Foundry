@@ -1,0 +1,86 @@
+<div class="posture grid grid-2col">
+  <label>Attitude
+    <select name="system.combat.attitude" data-dtype="Number">
+      {{selectOptions COPS.attitudes selected=system.combat.attitude valueAttr="value" labelAttr="label"}}
+    </select>
+  </label>
+  <label>Initiative (la plus basse agit en premier)
+    <select name="system.combat.initiative" data-dtype="Number">
+      {{selectOptions initiativesAutorisees selected=system.combat.initiative valueAttr="value" labelAttr="label"}}
+    </select>
+  </label>
+</div>
+<p class="aide">
+  L'attitude et l'initiative s'ajoutent au nombre de dés des tirs. Planqué : les attaques adverses ont +2 en difficulté ;
+  Ultra-violent : -2 (minimum 1). L'initiative choisie est utilisée par le suivi de combat.
+</p>
+
+<h3>Armes</h3>
+<table class="item-list armes">
+  <thead>
+    <tr><th></th><th>Arme</th><th title="Précision">PR</th><th title="Puissance">PU</th><th title="Force d'arrêt">FA</th>
+      <th title="Valeur de rafale courte">VRC</th><th>Portée</th><th title="Cadence de tir">CT</th><th>Mun.</th><th></th></tr>
+  </thead>
+  <tbody>
+    {{#each armes}}
+    <tr class="item" data-item-id="{{id}}">
+      <td><img src="{{img}}" width="24" height="24"/></td>
+      <td><a class="rollable" data-attaque="{{id}}" title="Attaquer"><i class="fa-solid fa-crosshairs"></i> {{name}}</a></td>
+      <td>{{copsSigne system.precision}}</td>
+      <td>{{#if system.dommagesSpeciaux}}{{system.dommagesSpeciaux}}{{else}}{{system.puissance}}d6{{/if}}</td>
+      <td>{{system.forceArret}}</td>
+      <td>{{#if system.vrc}}{{system.vrc}}{{else}}—{{/if}}</td>
+      <td>{{#if system.portee}}{{system.portee}} m{{else}}—{{/if}}</td>
+      <td>{{system.cadence}}</td>
+      <td>
+        {{#if system.munitions.max}}
+        {{system.munitions.value}}/{{system.munitions.max}}
+        <a class="item-control" data-recharger title="Recharger"><i class="fa-solid fa-rotate"></i></a>
+        {{else}}—{{/if}}
+      </td>
+      <td class="controls">
+        <a class="item-control" data-item-edit title="Modifier"><i class="fa-solid fa-pen"></i></a>
+        <a class="item-control" data-item-delete title="Supprimer"><i class="fa-solid fa-trash"></i></a>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+<a class="ajouter" data-item-create="arme"><i class="fa-solid fa-plus"></i> Ajouter une arme</a>
+
+<h3>Protections</h3>
+<table class="item-list armures">
+  <thead><tr><th></th><th>Protection</th><th>Valeur</th><th>Zones</th><th>Malus</th><th>Portée</th><th></th></tr></thead>
+  <tbody>
+    {{#each armures}}
+    <tr class="item {{#unless system.equipee}}inactif{{/unless}}" data-item-id="{{id}}">
+      <td><img src="{{img}}" width="24" height="24"/></td>
+      <td>{{name}}</td>
+      <td>{{system.protection}}</td>
+      <td class="zones">
+        {{#if system.zones.tete}}Tête {{/if}}{{#if system.zones.torse}}Torse {{/if}}{{#if system.zones.abdomen}}Abdo. {{/if}}{{#if system.zones.bras}}Bras {{/if}}{{#if system.zones.jambes}}Jambes{{/if}}
+      </td>
+      <td>{{#if system.malus}}-{{system.malus}} dé{{/if}}{{#if system.malusPerception}} -{{system.malusPerception}} Perc.{{/if}}</td>
+      <td><a class="item-control" data-item-toggle title="Porter / retirer">
+        <i class="fa-solid {{#if system.equipee}}fa-shield-halved{{else}}fa-shield{{/if}}"></i></a></td>
+      <td class="controls">
+        <a class="item-control" data-item-edit title="Modifier"><i class="fa-solid fa-pen"></i></a>
+        <a class="item-control" data-item-delete title="Supprimer"><i class="fa-solid fa-trash"></i></a>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+<a class="ajouter" data-item-create="armure"><i class="fa-solid fa-plus"></i> Ajouter une protection</a>
+
+<h3>Localisation et dommages</h3>
+<table class="table-regles">
+  <tr><th>d10</th><td>1-2</td><td>3-4</td><td>5-7</td><td>8-9</td><td>10</td></tr>
+  <tr><th>Zone</th><td>Jambes</td><td>Abdomen</td><td>Torse</td><td>Bras</td><td>Tête</td></tr>
+  <tr><th>Modif.</th><td>0</td><td>+1</td><td>+2</td><td>0</td><td>+3</td></tr>
+</table>
+<p class="aide">
+  Dommages = PU d6 − protection ; si positif, on ajoute autant de d6 que le modificateur de localisation.
+  Force d'arrêt : jet de Carrure ou Sang-froid (6+), difficulté = FA + modificateur de localisation.
+  Ciblez (touche T) le token touché puis cliquez sur « Appliquer » dans le chat.
+</p>

@@ -1,0 +1,17 @@
+{
+  "TYPES": {
+    "Actor": {
+      "cop": "Cop (personnage joueur)",
+      "pnj": "PNJ"
+    },
+    "Item": {
+      "arme": "Arme",
+      "armure": "Protection",
+      "equipement": "Équipement",
+      "stage": "Stage"
+    }
+  },
+  "COPS": {
+    "Systeme": "COPS"
+  }
+}

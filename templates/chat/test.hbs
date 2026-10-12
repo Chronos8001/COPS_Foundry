@@ -1,0 +1,56 @@
+<div class="cops carte-jet {{issue}}">
+  <header>
+    <h3>{{titre}}</h3>
+    <span class="sous-titre">{{sousTitre}}</span>
+  </header>
+
+  <div class="parametres">
+    <span title="{{caracValeur}} (caractéristique){{#each mods}} {{copsSigne valeur}} ({{label}}){{/each}}">{{nbDes}}d10</span>
+    <span>seuil {{seuil}}+{{#if sansCompetence}} (sans compétence){{/if}}</span>
+    {{#if difficulte}}<span>difficulté {{difficulte}}</span>{{else}}<span>opposition</span>{{/if}}
+  </div>
+  {{#if mods.length}}
+  <div class="mods">
+    {{#each mods}}<span class="mod">{{label}} {{copsSigne valeur}}</span>{{/each}}
+  </div>
+  {{/if}}
+
+  {{#if des.length}}
+  <ol class="des">
+    {{#each des}}
+    <li class="de {{#if succes}}succes{{/if}} {{#if critique}}critique{{/if}}" title="{{#if critique}}Réussite critique : relancé{{/if}}">{{valeur}}</li>
+    {{/each}}
+  </ol>
+  {{/if}}
+
+  <div class="issue">
+    <strong>{{succes}} réussite(s)</strong>
+    {{#if ancienneteUtilisee}}<span class="anciennete">dont {{ancienneteUtilisee}} d'ancienneté</span>{{/if}}
+    <div>{{issueLabel}}</div>
+    {{#if note}}<div class="note">{{note}}</div>{{/if}}
+  </div>
+
+  {{#if peutAnciennete}}
+  <button type="button" data-cops-action="anciennete"><i class="fa-solid fa-medal"></i> Dépenser 1 point d'ancienneté (+1 réussite)</button>
+  {{/if}}
+
+  {{#if impacts.length}}
+  <div class="impacts">
+    <h4>{{#if rafale}}Impacts de la rafale{{else}}Impact{{/if}}{{#if (copsEq issue "opposition")}} (si l'attaquant l'emporte){{/if}}</h4>
+    {{#each impacts}}
+    <div class="impact {{#if rate}}rate{{/if}}">
+      {{#if rate}}
+      <span>Balle {{numero}} : {{locLabel}}</span>
+      {{else}}
+      <span class="loc">{{#if localise}}{{locJet}} → {{locLabel}} ({{copsSigne locMod}}){{else}}{{locLabel}}{{/if}}</span>
+      <span class="deg" title="{{detailDegats}}">{{degats}} pts de puissance</span>
+      <span class="fa">FA {{faDiff}}</span>
+      <button type="button" data-cops-action="appliquer" data-index="{{index}}" title="Applique aux tokens ciblés (ou sélectionnés) : protection, dés de localisation, PV">
+        <i class="fa-solid fa-heart-crack"></i> Appliquer
+      </button>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+</div>

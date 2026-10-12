@@ -1,0 +1,70 @@
+<form class="{{cssClass}} flexcol" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" height="110" width="110"/>
+    <div class="header-fields">
+      <h1 class="charname"><input name="name" type="text" value="{{actor.name}}" placeholder="Nom"/></h1>
+      <div class="identite grid grid-3col">
+        <label>Grade<input type="text" name="system.identite.grade" value="{{system.identite.grade}}"/></label>
+        <label>Âge<input type="text" name="system.identite.age" value="{{system.identite.age}}"/></label>
+        <label>Origine<input type="text" name="system.identite.origine" value="{{system.identite.origine}}"/></label>
+        <label>Affectation<input type="text" name="system.identite.affectation" value="{{system.identite.affectation}}"/></label>
+        <label>Partenaire<input type="text" name="system.identite.partenaire" value="{{system.identite.partenaire}}"/></label>
+        <label>Salaire<input type="text" name="system.identite.salaire" value="{{system.identite.salaire}}"/></label>
+      </div>
+    </div>
+  </header>
+
+  <section class="ressources grid grid-4col">
+    <div class="ressource {{#if system.blesse}}blesse{{/if}}">
+      <span class="label">Points de vie</span>
+      <div class="valeurs">
+        <input type="number" name="system.pv.value" value="{{system.pv.value}}" data-dtype="Number"/>
+        <span>/ {{system.pv.max}}</span>
+      </div>
+      <span class="etat">
+        {{#if system.mort}}Mort{{else if system.inconscient}}Inconscient (-1 PV/tour){{else if system.blesse}}Blessé : -1 dé{{else}}&nbsp;{{/if}}
+      </span>
+    </div>
+    <div class="ressource">
+      <span class="label">Adrénaline</span>
+      <input type="number" name="system.adrenaline.value" value="{{system.adrenaline.value}}" data-dtype="Number" min="0" max="5"/>
+      <span class="etat">+1 dé avant le jet</span>
+    </div>
+    <div class="ressource">
+      <span class="label">Ancienneté</span>
+      <input type="number" name="system.anciennete.value" value="{{system.anciennete.value}}" data-dtype="Number" min="0" max="5"/>
+      <span class="etat">+1 réussite après un échec</span>
+    </div>
+    <div class="ressource">
+      <span class="label">Points de stage</span>
+      <input type="number" name="system.pointsStage" value="{{system.pointsStage}}" data-dtype="Number" min="0"/>
+      <a class="repos" data-repos title="Récupérer 1 point d'Adrénaline ou d'Ancienneté"><i class="fa-solid fa-bed"></i> Nuit de repos</a>
+    </div>
+  </section>
+
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item" data-tab="competences">Caractéristiques</a>
+    <a class="item" data-tab="combat">Combat</a>
+    <a class="item" data-tab="inventaire">Équipement</a>
+    <a class="item" data-tab="bio">Dossier</a>
+  </nav>
+
+  <section class="sheet-body">
+    <div class="tab competences" data-group="primary" data-tab="competences">
+      {{> "systems/cops/templates/actor/parts/competences.hbs"}}
+    </div>
+    <div class="tab combat" data-group="primary" data-tab="combat">
+      {{> "systems/cops/templates/actor/parts/combat.hbs"}}
+    </div>
+    <div class="tab inventaire" data-group="primary" data-tab="inventaire">
+      {{> "systems/cops/templates/actor/parts/inventaire.hbs"}}
+    </div>
+    <div class="tab bio" data-group="primary" data-tab="bio">
+      <label class="langues">Langues parlées <input type="text" name="system.identite.langues" value="{{system.identite.langues}}"/></label>
+      <h3>Relations et contacts</h3>
+      {{editor relationsHTML target="system.relations" button=true owner=owner editable=editable}}
+      <h3>Biographie / notes</h3>
+      {{editor biographieHTML target="system.biographie" button=true owner=owner editable=editable}}
+    </div>
+  </section>
+</form>

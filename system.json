@@ -1,0 +1,71 @@
+{
+  "id": "cops",
+  "title": "COPS",
+  "description": "Système non officiel pour le jeu de rôle COPS (Los Angeles 2030) : fiches de personnage, jets de compétences en d10, combat (localisation, puissance, force d'arrêt), adrénaline et ancienneté.",
+  "version": "0.1.0",
+  "authors": [
+    { "name": "Chronos8001" }
+  ],
+  "compatibility": {
+    "minimum": "12",
+    "verified": "13"
+  },
+  "esmodules": ["module/cops.mjs"],
+  "styles": ["styles/cops.css"],
+  "languages": [
+    { "lang": "fr", "name": "Français", "path": "lang/fr.json" },
+    { "lang": "en", "name": "English", "path": "lang/en.json" }
+  ],
+  "documentTypes": {
+    "Actor": {
+      "cop": { "htmlFields": ["biographie", "relations"] },
+      "pnj": { "htmlFields": ["biographie", "relations"] }
+    },
+    "Item": {
+      "arme": { "htmlFields": ["description"] },
+      "armure": { "htmlFields": ["description"] },
+      "equipement": { "htmlFields": ["description"] },
+      "stage": { "htmlFields": ["description"] }
+    }
+  },
+  "packs": [
+    {
+      "name": "armes",
+      "label": "Armes (livre de base)",
+      "path": "packs/armes",
+      "type": "Item",
+      "system": "cops",
+      "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" }
+    },
+    {
+      "name": "armures",
+      "label": "Protections et armures",
+      "path": "packs/armures",
+      "type": "Item",
+      "system": "cops",
+      "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" }
+    },
+    {
+      "name": "equipement",
+      "label": "Équipement",
+      "path": "packs/equipement",
+      "type": "Item",
+      "system": "cops",
+      "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" }
+    }
+  ],
+  "packFolders": [
+    {
+      "name": "COPS",
+      "sorting": "m",
+      "packs": ["armes", "armures", "equipement"]
+    }
+  ],
+  "grid": { "distance": 1, "units": "m" },
+  "primaryTokenAttribute": "pv",
+  "secondaryTokenAttribute": "adrenaline",
+  "initiative": "0",
+  "url": "https://github.com/Chronos8001/COPS_Foundry",
+  "manifest": "https://github.com/Chronos8001/COPS_Foundry/releases/latest/download/system.json",
+  "download": "https://github.com/Chronos8001/COPS_Foundry/releases/download/v0.1.0/cops.zip"
+}

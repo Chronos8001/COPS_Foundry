@@ -1,0 +1,49 @@
+# Publie le système à chaque « Release » GitHub (tag vX.Y.Z).
+# Produit cops.zip + system.json, utilisés par Foundry / The Forge via l'URL du manifeste :
+#   https://github.com/Chronos8001/COPS_Foundry/releases/latest/download/system.json
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Compiler les compendiums
+        run: npm run build:packs
+
+      - name: Mettre à jour version et URL de téléchargement
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          VERSION="${TAG#v}"
+          jq --arg v "$VERSION" \
+             --arg d "https://github.com/$REPO/releases/download/$TAG/cops.zip" \
+             '.version = $v | .download = $d' system.json > system.tmp && mv system.tmp system.json
+          cat system.json
+
+      - name: Créer l'archive
+        run: zip -r cops.zip system.json module templates styles lang packs README.md
+
+      - name: Joindre les fichiers à la release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            system.json
+            cops.zip

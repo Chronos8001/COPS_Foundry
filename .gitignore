@@ -1,0 +1,7 @@
+# Livre de règles : sous droits d'auteur, ne jamais le publier
+*.pdf
+
+node_modules/
+dist/
+# Compendiums compilés (LevelDB) : générés par `npm run build`
+packs/

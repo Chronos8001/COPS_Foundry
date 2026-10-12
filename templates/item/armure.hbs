@@ -1,0 +1,22 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
+    <h1 class="charname"><input name="name" type="text" value="{{item.name}}" placeholder="Nom"/></h1>
+  </header>
+  <section class="champs grid grid-4col">
+    <label title="Format : 2d6+6, 1d6, +3">Protection<input type="text" name="system.protection" value="{{system.protection}}"/></label>
+    <label title="Dés de malus aux actions physiques">Malus (dés)<input type="number" name="system.malus" value="{{system.malus}}" min="0"/></label>
+    <label title="Dés de malus aux jets de Perception">Malus Perception<input type="number" name="system.malusPerception" value="{{system.malusPerception}}" min="0"/></label>
+    <label>Prix<input type="text" name="system.prix" value="{{system.prix}}"/></label>
+  </section>
+  <section class="champs zones-armure">
+    <span>Zones protégées :</span>
+    {{#each localisations}}
+    <label><input type="checkbox" name="system.zones.{{key}}" {{checked actif}}/> {{label}}</label>
+    {{/each}}
+    <label class="porte"><input type="checkbox" name="system.equipee" {{checked system.equipee}}/> Portée</label>
+  </section>
+  <p class="aide">En cas de cumul sur une zone, on garde le meilleur dé et le meilleur bonus ; les malus se cumulent.</p>
+  <h3>Description</h3>
+  {{editor descriptionHTML target="system.description" button=true owner=owner editable=editable}}
+</form>

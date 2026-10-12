@@ -1,0 +1,62 @@
+<div class="cops dialogue-jet">
+  <p class="resume-arme">
+    PR {{copsSigne arme.system.precision}} · PU {{arme.system.puissance}} · FA {{arme.system.forceArret}}
+    {{#if distance}}· Portée {{arme.system.portee}} m{{/if}}
+    {{#if munitions.max}}· Munitions {{munitions.value}}/{{munitions.max}}{{/if}}
+  </p>
+
+  {{#if rafale}}
+  <div class="form-group">
+    <label>Mode de tir</label>
+    <select name="mode">
+      <option value="simple">Coup par coup</option>
+      <option value="rafale">Rafale courte ({{arme.system.vrc}} balles, Tir en rafales)</option>
+    </select>
+  </div>
+  {{/if}}
+
+  <div class="form-group">
+    <label>Votre attitude (dés)</label>
+    <select name="attitude" data-dtype="Number">{{selectOptions attitudes selected=attitude valueAttr="value" labelAttr="label"}}</select>
+  </div>
+
+  {{#if distance}}
+  <div class="form-group">
+    <label>Votre initiative (dés)</label>
+    <select name="initiative" data-dtype="Number">{{selectOptions initiatives selected=initiative valueAttr="value" labelAttr="label"}}</select>
+  </div>
+  <div class="form-group">
+    <label>Distance</label>
+    <select name="distance">{{selectOptions distances selected="moyenne"}}</select>
+  </div>
+  <div class="form-group">
+    <label>Attitude de la cible (difficulté)</label>
+    <select name="attitudeCible" data-dtype="Number">{{selectOptions attitudes selected=0 valueAttr="value" labelAttr="label"}}</select>
+  </div>
+  <div class="form-group">
+    <label>Tir n° dans le tour</label>
+    <select name="numeroTir" data-dtype="Number">{{selectOptions ctOptions selected=1}}</select>
+  </div>
+  <div class="form-group">
+    <label>Autre modificateur de difficulté</label>
+    <input type="number" name="modDifficulte" value="0"/>
+  </div>
+  {{#if munitions.max}}
+  <div class="form-group">
+    <label>Décompter les munitions</label>
+    <input type="checkbox" name="consommer" checked/>
+  </div>
+  {{/if}}
+  {{else}}
+  <p class="aide">Corps à corps : jet en opposition, comparez les réussites avec celles de l'adversaire.</p>
+  {{/if}}
+
+  <div class="form-group">
+    <label>Modificateur de dés</label>
+    <input type="number" name="modDes" value="0"/>
+  </div>
+  <div class="form-group">
+    <label>Dépenser 1 point d'adrénaline (+1 dé) — reste {{adrenaline}}</label>
+    <input type="checkbox" name="adrenaline" {{#unless adrenaline}}disabled{{/unless}}/>
+  </div>
+</div>

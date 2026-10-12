@@ -1,0 +1,14 @@
+<h3>Équipement</h3>
+<ol class="item-list">
+  {{#each equipements}}
+  <li class="item flexrow" data-item-id="{{id}}">
+    <img src="{{img}}" width="24" height="24"/>
+    <span class="item-name">{{name}}</span>
+    <span class="item-qte">× {{system.quantite}}</span>
+    <a class="item-control" data-item-edit title="Modifier"><i class="fa-solid fa-pen"></i></a>
+    <a class="item-control" data-item-delete title="Supprimer"><i class="fa-solid fa-trash"></i></a>
+  </li>
+  {{/each}}
+</ol>
+<a class="ajouter" data-item-create="equipement"><i class="fa-solid fa-plus"></i> Ajouter un équipement</a>
+<p class="aide">Astuce : faites glisser des objets depuis les compendiums « Armes », « Protections » et « Équipement ».</p>

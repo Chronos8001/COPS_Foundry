@@ -1,0 +1,112 @@
+/* ==== COPS — Los Angeles 2030 ==== */
+.cops {
+  --cops-noir: #16181d;
+  --cops-bleu: #1f4e8c;
+  --cops-bleu-clair: #dfe8f5;
+  --cops-rouge: #b3261e;
+  --cops-vert: #2e7d32;
+  --cops-or: #c99a16;
+  --cops-gris: #6b7280;
+}
+
+/* ---------- Fiches ---------- */
+.cops.sheet .window-content { padding: 8px; }
+.cops.sheet form { display: flex; flex-direction: column; height: 100%; }
+.cops.sheet .sheet-header { display: flex; gap: 10px; align-items: flex-start; flex: 0 0 auto; margin-bottom: 6px; }
+.cops.sheet .sheet-header .profile-img { flex: 0 0 auto; border: 2px solid var(--cops-noir); object-fit: cover; }
+.cops.sheet .header-fields { flex: 1; }
+.cops.sheet .charname { margin: 0 0 4px; border: none; }
+.cops.sheet .charname input { font-size: 1.6em; height: 1.6em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+.cops.sheet label { display: flex; flex-direction: column; font-size: 0.85em; color: var(--cops-gris); gap: 2px; }
+.cops.sheet label input, .cops.sheet label select { color: var(--color-text-primary, #111); }
+.cops.sheet .grid { display: grid; gap: 4px 8px; margin: 0; }
+.cops.sheet .grid-2col { grid-template-columns: repeat(2, 1fr); }
+.cops.sheet .grid-3col { grid-template-columns: repeat(3, 1fr); }
+.cops.sheet .grid-4col { grid-template-columns: repeat(4, 1fr); }
+.cops.sheet h3 { border-bottom: 2px solid var(--cops-bleu); margin: 10px 0 4px; font-size: 1.05em; text-transform: uppercase; }
+.cops.sheet .aide { font-size: 0.8em; color: var(--cops-gris); font-style: italic; margin: 4px 0; }
+
+.cops.sheet .ressources { flex: 0 0 auto; }
+.cops.sheet .ressource {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--cops-noir); color: #fff; padding: 4px; border-radius: 4px;
+}
+.cops.sheet .ressource.blesse { background: var(--cops-rouge); }
+.cops.sheet .ressource .label { font-weight: bold; text-transform: uppercase; font-size: 0.8em; }
+.cops.sheet .ressource input { width: 3.2em; text-align: center; font-size: 1.3em; background: #fff; }
+.cops.sheet .ressource .valeurs { display: flex; align-items: center; gap: 4px; font-size: 1.2em; }
+.cops.sheet .ressource .etat { font-size: 0.75em; opacity: 0.85; }
+.cops.sheet .ressource .repos { font-size: 0.75em; color: #fff; }
+
+.cops.sheet .sheet-tabs { flex: 0 0 auto; border-top: 1px solid var(--cops-noir); border-bottom: 1px solid var(--cops-noir); margin: 6px 0; }
+.cops.sheet .sheet-tabs .item { font-weight: bold; text-transform: uppercase; }
+.cops.sheet .sheet-tabs .item.active { color: var(--cops-bleu); text-shadow: none; }
+.cops.sheet .sheet-body { flex: 1; overflow-y: auto; }
+
+.cops.sheet .colonnes { display: grid; grid-template-columns: 220px 1fr; gap: 12px; }
+.cops.sheet .liste-caracs { list-style: none; margin: 0; padding: 0; }
+.cops.sheet .carac { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px dotted #aaa; }
+.cops.sheet .carac input { width: 3em; text-align: center; font-weight: bold; font-size: 1.15em; }
+.cops.sheet .rollable { cursor: pointer; }
+.cops.sheet .rollable:hover { color: var(--cops-bleu); text-shadow: 0 0 6px var(--cops-bleu-clair); }
+
+.cops.sheet table { width: 100%; border-collapse: collapse; margin: 0; font-size: 0.9em; }
+.cops.sheet table th { background: var(--cops-noir); color: #fff; text-align: left; padding: 2px 4px; }
+.cops.sheet table td { padding: 1px 4px; border-bottom: 1px solid #ccc; }
+.cops.sheet .competence.non-acquise a { color: var(--cops-gris); }
+.cops.sheet .competence select { width: 4.5em; }
+.cops.sheet .competence .carac-abbr { font-size: 0.8em; color: var(--cops-gris); }
+.cops.sheet .competence .adr { color: var(--cops-or); font-size: 0.8em; }
+.cops.sheet input.spe-requise { border-color: var(--cops-rouge); }
+
+.cops.sheet .item-list { list-style: none; padding: 0; margin: 0; }
+.cops.sheet .item-list .item img { border: none; vertical-align: middle; }
+.cops.sheet .item-list li.item { align-items: center; gap: 6px; padding: 2px 0; border-bottom: 1px solid #ddd; }
+.cops.sheet .item-list .item-name { flex: 1; }
+.cops.sheet .item-list .item-qte, .cops.sheet .item-list .item-control { flex: 0 0 auto; }
+.cops.sheet .item-list tr.inactif { opacity: 0.5; }
+.cops.sheet .item-list .controls { white-space: nowrap; text-align: right; }
+.cops.sheet .ajouter { display: inline-block; margin: 4px 0; font-size: 0.85em; color: var(--cops-bleu); }
+.cops.sheet .table-regles td, .cops.sheet .table-regles th { text-align: center; }
+
+.cops.sheet .champs { margin-bottom: 6px; }
+.cops.sheet .zones-armure { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.cops.sheet .zones-armure label { flex-direction: row; align-items: center; color: inherit; }
+.cops.sheet .editor { min-height: 160px; }
+.cops.sheet .tab.bio .editor { min-height: 200px; }
+.cops.sheet .langues { margin-top: 6px; }
+
+/* ---------- Dialogues ---------- */
+.cops.dialogue-jet .form-group { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.cops.dialogue-jet .form-group label { flex: 2; }
+.cops.dialogue-jet .form-group select, .cops.dialogue-jet .form-group input[type="number"] { flex: 1; }
+.cops.dialogue-jet .resume-arme { font-weight: bold; text-align: center; margin: 0 0 6px; }
+
+/* ---------- Cartes de chat ---------- */
+.cops.carte-jet { border-left: 4px solid var(--cops-bleu); padding-left: 6px; }
+.cops.carte-jet.reussite { border-left-color: var(--cops-vert); }
+.cops.carte-jet.echec { border-left-color: var(--cops-rouge); }
+.cops.carte-jet.degats { border-left-color: var(--cops-rouge); }
+.cops.carte-jet header h3 { margin: 0; font-size: 1.15em; border: none; }
+.cops.carte-jet .sous-titre { font-size: 0.85em; color: var(--cops-gris); }
+.cops.carte-jet .parametres { display: flex; gap: 8px; font-size: 0.85em; margin: 4px 0; flex-wrap: wrap; }
+.cops.carte-jet .parametres span { background: var(--cops-bleu-clair); color: #111; padding: 0 4px; border-radius: 3px; }
+.cops.carte-jet .mods { display: flex; flex-wrap: wrap; gap: 4px; font-size: 0.75em; color: var(--cops-gris); }
+.cops.carte-jet .des { list-style: none; display: flex; flex-wrap: wrap; gap: 3px; padding: 0; margin: 6px 0; }
+.cops.carte-jet .de {
+  width: 26px; height: 26px; line-height: 26px; text-align: center; font-weight: bold;
+  border: 1px solid #888; border-radius: 4px; background: #eee; color: #555;
+}
+.cops.carte-jet .de.succes { background: var(--cops-vert); color: #fff; border-color: var(--cops-vert); }
+.cops.carte-jet .de.critique { background: var(--cops-or); border-color: var(--cops-or); color: #000; }
+.cops.carte-jet .issue { text-align: center; margin: 4px 0; }
+.cops.carte-jet .issue strong { font-size: 1.15em; }
+.cops.carte-jet .issue .note { font-size: 0.85em; font-style: italic; }
+.cops.carte-jet .anciennete { font-size: 0.8em; color: var(--cops-or); margin-left: 4px; }
+.cops.carte-jet button { margin-top: 4px; line-height: 1.6em; font-size: 0.85em; }
+.cops.carte-jet .impacts h4 { margin: 6px 0 2px; border-bottom: 1px solid #999; }
+.cops.carte-jet .impact { display: grid; grid-template-columns: 1fr auto auto; gap: 2px 6px; align-items: center; font-size: 0.85em; padding: 2px 0; }
+.cops.carte-jet .impact button { grid-column: 1 / -1; margin: 0; }
+.cops.carte-jet .impact.rate { color: var(--cops-gris); font-style: italic; display: block; }
+.cops.carte-jet .calcul { list-style: none; padding: 0; margin: 4px 0; font-size: 0.9em; }
+.cops.carte-jet .calcul .arrete { color: var(--cops-vert); font-weight: bold; }

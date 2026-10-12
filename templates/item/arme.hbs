@@ -1,0 +1,34 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
+    <h1 class="charname"><input name="name" type="text" value="{{item.name}}" placeholder="Nom"/></h1>
+  </header>
+  <section class="champs grid grid-2col">
+    <label>Catégorie
+      <select name="system.categorie">{{selectOptions COPS.categoriesArme selected=system.categorie}}</select>
+    </label>
+    <label>Compétence
+      <select name="system.competence">{{selectOptions competences selected=system.competence}}</select>
+    </label>
+    <label>Spécialisation <input type="text" name="system.specialisation" value="{{system.specialisation}}"/></label>
+    <label>Prix <input type="text" name="system.prix" value="{{system.prix}}"/></label>
+  </section>
+  <section class="champs grid grid-4col">
+    <label title="Dés de bonus à l'attaque">Précision (PR)<input type="number" name="system.precision" value="{{system.precision}}"/></label>
+    <label title="Nombre de d6 de dommages">Puissance (PU)<input type="number" name="system.puissance" value="{{system.puissance}}"/></label>
+    <label>Force d'arrêt (FA)<input type="number" name="system.forceArret" value="{{system.forceArret}}"/></label>
+    <label title="Balles par rafale courte (0 = pas de rafale)">Rafale (VRC)<input type="number" name="system.vrc" value="{{system.vrc}}"/></label>
+    <label>Portée (m)<input type="number" name="system.portee" value="{{system.portee}}"/></label>
+    <label title="Difficulté d'un tir de couverture (0 = impossible)">Couverture (VC)<input type="number" name="system.vc" value="{{system.vc}}"/></label>
+    <label title="Nombre d'utilisations par tour">Cadence (CT)<input type="number" name="system.cadence" value="{{system.cadence}}"/></label>
+    <label>Chargement
+      <select name="system.chargement">{{selectOptions chargements selected=system.chargement}}</select>
+    </label>
+    <label>Munitions<input type="number" name="system.munitions.value" value="{{system.munitions.value}}"/></label>
+    <label>Capacité<input type="number" name="system.munitions.max" value="{{system.munitions.max}}"/></label>
+    <label title="Relance les 1 sur les dés de dommages">Relance les 1<input type="checkbox" name="system.relanceUn" {{checked system.relanceUn}}/></label>
+    <label title="Pour les explosifs : formule de dommages non localisés, ex. 2d6+2">Dommages spéciaux<input type="text" name="system.dommagesSpeciaux" value="{{system.dommagesSpeciaux}}"/></label>
+  </section>
+  <h3>Description</h3>
+  {{editor descriptionHTML target="system.description" button=true owner=owner editable=editable}}
+</form>

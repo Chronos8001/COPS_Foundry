@@ -1,0 +1,26 @@
+<div class="cops dialogue-jet">
+  <div class="form-group">
+    <label>Caractéristique (nb de dés)</label>
+    <select name="carac">{{selectOptions caracteristiques selected=carac}}</select>
+  </div>
+  <div class="form-group">
+    <label>Compétence (seuil)</label>
+    <select name="competence">{{selectOptions competences selected=competence}}</select>
+  </div>
+  <div class="form-group">
+    <label>Difficulté (réussites requises, 0 = opposition)</label>
+    <input type="number" name="difficulte" value="{{difficulte}}" min="0"/>
+  </div>
+  <div class="form-group">
+    <label>Modificateur de dés</label>
+    <input type="number" name="modDes" value="0"/>
+  </div>
+  <div class="form-group">
+    <label>Modificateur de seuil (+1 = plus dur)</label>
+    <input type="number" name="modSeuil" value="0"/>
+  </div>
+  <div class="form-group">
+    <label>Dépenser 1 point d'adrénaline (+1 dé) — reste {{adrenaline}}</label>
+    <input type="checkbox" name="adrenaline" {{#unless adrenaline}}disabled{{/unless}}/>
+  </div>
+</div>

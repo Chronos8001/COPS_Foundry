@@ -23,10 +23,43 @@ Système de jeu **non officiel** pour le jeu de rôle *COPS* (Los Angeles 2030),
   Un bouton lance ensuite le **jet de force d'arrêt** (Carrure ou Sang-froid, 6+, difficulté FA + localisation).
 - **Suivi de combat** : l'initiative la plus basse agit en premier ; en cas d'égalité, les Réflexes
   puis l'attitude la plus agressive départagent.
-- **Compendiums** : armes à feu, armes anciennes, armes blanches, explosifs, protections et dotation du COPS.
+- **Compendiums** : armes à feu, armes anciennes, armes blanches, explosifs, protections, dotation du COPS
+  et **stages** (62 stages des niveaux 1 à 3, rangés par niveau, avec prérequis, cumul, bonus et capacités spéciales).
+- **Assistant de création** (bouton **Création** dans la barre de titre d'une fiche de cop, ouvert automatiquement
+  à la création d'un cop vierge — désactivable dans les paramètres) :
+  - 21 points de caractéristiques (2 à 5, un seul 5) ;
+  - compétences de départ du COPS + 10 points (améliorations et nouvelles compétences), spécialisations ;
+  - origine sociale et son avantage (arme, argent, véhicule, rente…), études (2 points), entrée au COPS
+    (Adrénaline / Ancienneté), relations à préciser ;
+  - 2 stages de niveau 1 avec vérification automatique des prérequis, choix de la capacité spéciale
+    et de la compétence visée ;
+  - dotation complète (uniforme, masque, tonfa, Compact ou Colt, holster…, trousse et kit prêtés si les
+    compétences le permettent) ;
+  - salaire (1 500 $ : Détective échelon I, rang 2), revenus annexes et argent de départ
+    (un mois de salaire par défaut, le livre ne fixant pas de somme ; modifiable) ;
+  - bouton **Tout aléatoire** pour tirer un personnage complet et valide, puis l'ajuster.
+- **Finances** : salaire, revenus annexes et argent sur la fiche ; bouton **Paie** pour verser le mois
+  (primes de stage comprises).
+- **Effets des stages automatisés** (selon les stages portés et la capacité choisie) :
+  - **dé bleu** (affiché en bleu sur la carte, une réussite compte double) : automatique quand il ne dépend que de
+    la compétence (Criminalistique, Commando, Regard de flic, Premier de la classe…), sinon case à cocher dans
+    le dialogue de jet (Géopolitique, Pot de fleurs, Infiltration, Endurance…) ;
+  - **relance d'un dé en échec** (Technique d'interrogatoire sur la compétence visée, Ricardo Tubbs) ;
+  - **dés bonus** sous condition (Imperturbable, Évasion, Esprit de ruche, Zanshin, Suceur) ;
+  - **Adrénaline** sur Instinct de flic (Combat de localité), plusieurs points par jet (Hyper réactif) ;
+  - **Ancienneté doublée** sur les jets physiques et de Sang-froid (Opération ninja blanc) ;
+  - **Petit génie** (niveau 7+ minimum), **Solide comme l'acier** (dé bleu en force d'arrêt) ;
+  - **attaques** : bonus de dommages (Tir, Gestion des foules, Tonfa) et de localisation (Tir niv. 2), répartis
+    avec des boutons sur la carte dans la limite de la marge (cumulables avec Tir niv. 3) ; Point faible ;
+    tirs visés (Tir incapacitant, Sniper) ; Rafale maîtrisée ;
+  - **permanents** : PV de « Gonflette », primes de salaire (Rond-de-cuir, Petit génie) versées par le bouton Paie,
+    initiative de Tir instinctif (minimum −2, égalités gagnées).
 
-Les poursuites, les interrogatoires, le tir de couverture, les dommages collatéraux et les stages se gèrent
-à la main : jets avec le dialogue générique, et stages comme objets descriptifs sur la fiche.
+  La fiche d'un stage indique ce qui est automatisé et sur quoi. Son champ « Compétence visée / domaine »
+  (Tir : arme de poing ou d'épaule ; Interrogatoire : Intimidation, Éloquence ou Rhétorique) restreint ses effets.
+
+Restent à gérer à la main : poursuites, tir de couverture, dommages collatéraux, corps à corps à mains nues
+(Frappe), et les capacités narratives des stages (Mémoire photographique, Carambole, Caïd…).
 
 ## Installation sur The Forge
 
@@ -71,7 +104,10 @@ téléchargement, puis joint `cops.zip` et `system.json` à la release. L'URL du
 ```
 system.json            manifeste du système
 module/cops.mjs        point d'entrée (enregistrement des modèles, fiches, hooks)
-module/config.mjs      constantes de règles (caractéristiques, compétences, localisations…)
+module/config.mjs      constantes de règles (caractéristiques, compétences, création de personnage…)
+module/stages.mjs      prérequis des stages (texte et vérification)
+module/effets-stages.mjs  effets automatisés des stages sur les jets
+module/apps/           assistant de création de cops
 module/data/           modèles de données (acteurs, objets)
 module/dice.mjs        jets, attaques, dégâts, force d'arrêt, ancienneté
 module/documents/      combat (ordre d'initiative COPS)
@@ -79,5 +115,5 @@ module/sheets/         fiches d'acteur et d'objet
 templates/             gabarits Handlebars
 styles/cops.css        apparence
 lang/                  traductions
-tools/                 données et compilation des compendiums
+tools/                 données (donnees.mjs, stages.mjs) et compilation des compendiums
 ```

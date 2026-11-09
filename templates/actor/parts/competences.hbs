@@ -49,11 +49,12 @@
   {{#each stages}}
   <li class="item flexrow" data-item-id="{{id}}">
     <img src="{{img}}" width="24" height="24"/>
-    <span class="item-name">{{name}} (niv. {{system.niveau}})</span>
+    <span class="item-name">{{name}} {{#if system.capacite}}<span class="item-detail">— {{system.capacite}}</span>{{/if}}</span>
     <a class="item-control" data-item-edit title="Modifier"><i class="fa-solid fa-pen"></i></a>
     <a class="item-control" data-item-delete title="Supprimer"><i class="fa-solid fa-trash"></i></a>
   </li>
   {{/each}}
 </ol>
 <a class="ajouter" data-item-create="stage"><i class="fa-solid fa-plus"></i> Ajouter un stage</a>
+<p class="aide">Astuce : faites glisser un stage depuis le compendium « Stages ». Coût : 1 point (niveau 1), 2 points (niveau 2), 4 points (niveau 3).</p>
 {{/if}}

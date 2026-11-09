@@ -1,6 +1,6 @@
 import { COPS } from "../config.mjs";
 
-const { NumberField, StringField, SchemaField, HTMLField, BooleanField } = foundry.data.fields;
+const { NumberField, StringField, SchemaField, HTMLField, BooleanField, ArrayField, ObjectField } = foundry.data.fields;
 
 const entier = (initial = 0, opts = {}) =>
   new NumberField({ required: true, nullable: false, integer: true, initial, ...opts });
@@ -87,8 +87,23 @@ export class StageData extends ObjetData {
     return {
       ...super.defineSchema(),
       niveau: entier(1, { min: 1, max: 3 }),
+      /** Famille du stage (tir, conduite…) : sert aux prérequis « stage X niveau N ». */
+      famille: new StringField({ initial: "" }),
       prerequis: new StringField({ initial: "" }),
-      cumul: new StringField({ initial: "" })
+      /** Prérequis structurés pour la vérification automatique (voir module/stages.mjs). */
+      requis: new ObjectField({ initial: {} }),
+      cumul: new StringField({ initial: "" }),
+      cumulable: new BooleanField({ initial: false }),
+      /** Capacités spéciales proposées, et celle choisie par le personnage. */
+      capacites: new ArrayField(new StringField()),
+      capacite: new StringField({ initial: "" }),
+      /** Compétence visée (Tir : arme de poing ou d'épaule…) ou domaine (milieu, quartier…). */
+      cible: new StringField({ initial: "" })
     };
+  }
+
+  /** Coût en points de stage (1, 2 ou 4). */
+  get cout() {
+    return COPS.coutStage[this.niveau] ?? 1;
   }
 }

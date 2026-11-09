@@ -18,9 +18,13 @@
   {{#if des.length}}
   <ol class="des">
     {{#each des}}
-    <li class="de {{#if succes}}succes{{/if}} {{#if critique}}critique{{/if}}" title="{{#if critique}}Réussite critique : relancé{{/if}}">{{valeur}}</li>
+    <li class="de {{#if succes}}succes{{/if}} {{#if critique}}critique{{/if}} {{#if bleu}}bleu{{/if}} {{#if relance}}relance{{/if}} {{#if nouveau}}nouveau{{/if}}"
+        title="{{#if bleu}}Dé bleu (stage) : une réussite compte double. {{/if}}{{#if relance}}Dé relancé (stage). {{/if}}{{#if nouveau}}Dé de relance (stage). {{/if}}{{#if critique}}Réussite critique : relancé{{/if}}">{{valeur}}</li>
     {{/each}}
   </ol>
+  {{/if}}
+  {{#if notesStages.length}}
+  <div class="notes-stages">{{#each notesStages}}<span><i class="fa-solid fa-graduation-cap"></i> {{this}}</span>{{/each}}</div>
   {{/if}}
 
   <div class="issue">
@@ -31,7 +35,7 @@
   </div>
 
   {{#if peutAnciennete}}
-  <button type="button" data-cops-action="anciennete"><i class="fa-solid fa-medal"></i> Dépenser 1 point d'ancienneté (+1 réussite)</button>
+  <button type="button" data-cops-action="anciennete"><i class="fa-solid fa-medal"></i> Dépenser 1 point d'ancienneté ({{#if ancienneteDouble}}+2 réussites, stage{{else}}+1 réussite{{/if}})</button>
   {{/if}}
 
   {{#if impacts.length}}
@@ -43,8 +47,30 @@
       <span>Balle {{numero}} : {{locLabel}}</span>
       {{else}}
       <span class="loc">{{#if localise}}{{locJet}} → {{locLabel}} ({{copsSigne locMod}}){{else}}{{locLabel}}{{/if}}</span>
-      <span class="deg" title="{{detailDegats}}">{{degats}} pts de puissance</span>
+      <span class="deg" title="{{detailDegats}}">{{degats}} pts de puissance{{#if bonusDeg}} (dont +{{bonusDeg}} stage){{/if}}{{#if ignoreArmure}} · armure ignorée{{/if}}</span>
       <span class="fa">FA {{faDiff}}</span>
+      {{#if @root.stage}}
+      <div class="stage-impact">
+        <span class="titre-stage" title="{{@root.stage.sources}}"><i class="fa-solid fa-graduation-cap"></i> Marge{{#if (copsEq stageReste null)}} (limitée par votre avance sur l'adversaire){{else}} restante : {{stageReste}}{{/if}}</span>
+        {{#if @root.stage.degats}}
+        <span>Dommages
+          <a data-cops-action="stage" data-index="{{index}}" data-champ="deg" data-delta="-1" title="Retirer 1">−</a>
+          +{{bonusDeg}}
+          <a data-cops-action="stage" data-index="{{index}}" data-champ="deg" data-delta="1" title="Ajouter 1">+</a>
+        </span>
+        {{/if}}
+        {{#if peutLoc}}
+        <span>Localisation
+          <a data-cops-action="stage" data-index="{{index}}" data-champ="loc" data-delta="-1" title="−1 au jet de localisation">−</a>
+          {{copsSigne locShift}}
+          <a data-cops-action="stage" data-index="{{index}}" data-champ="loc" data-delta="1" title="+1 au jet de localisation">+</a>
+        </span>
+        {{/if}}
+        {{#if @root.stage.pointFaible}}
+        <a data-cops-action="stage" data-index="{{index}}" data-champ="pf" class="{{#if ignoreArmure}}actif{{/if}}" title="Dépense 2 points de marge : ignore l'armure de la cible">Point faible</a>
+        {{/if}}
+      </div>
+      {{/if}}
       <button type="button" data-cops-action="appliquer" data-index="{{index}}" title="Applique aux tokens ciblés (ou sélectionnés) : protection, dés de localisation, PV">
         <i class="fa-solid fa-heart-crack"></i> Appliquer
       </button>

@@ -19,8 +19,5 @@
     <label>Modificateur de seuil (+1 = plus dur)</label>
     <input type="number" name="modSeuil" value="0"/>
   </div>
-  <div class="form-group">
-    <label>Dépenser 1 point d'adrénaline (+1 dé) — reste {{adrenaline}}</label>
-    <input type="checkbox" name="adrenaline" {{#unless adrenaline}}disabled{{/unless}}/>
-  </div>
+  {{> "systems/cops/templates/dialog/parts/stages.hbs"}}
 </div>

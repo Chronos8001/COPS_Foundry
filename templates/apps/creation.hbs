@@ -1,0 +1,213 @@
+<div class="creation">
+  <header class="creation-entete">
+    <p>Suivez les étapes ou laissez le hasard décider, puis ajustez. Rien n'est modifié avant de cliquer sur <strong>Créer le cops</strong>.</p>
+    <div class="boutons">
+      <button type="button" data-action="aleatoire"><i class="fa-solid fa-dice"></i> Tout aléatoire</button>
+      <button type="button" data-action="reinitialiser"><i class="fa-solid fa-rotate-left"></i> Réinitialiser</button>
+    </div>
+  </header>
+
+  <div class="creation-corps">
+    {{!-- 1. Caractéristiques --}}
+    <section class="etape">
+      <h2>
+        <span>1. Caractéristiques</span>
+        <span class="compteur {{#if (copsEq calc.totalCaracs r.pointsCaracs)}}ok{{else}}ko{{/if}}">{{calc.totalCaracs}} / {{r.pointsCaracs}} points</span>
+        <button type="button" class="mini" data-action="caracsAleatoires" title="Répartition aléatoire"><i class="fa-solid fa-dice"></i></button>
+      </h2>
+      <p class="aide">Entre {{r.caracMin}} et {{r.caracMax}} ; une seule caractéristique à {{r.caracMax}}.</p>
+      <div class="grille-caracs">
+        {{#each caracs}}
+        <label>{{label}}<input type="number" min="{{@root.r.caracMin}}" max="{{@root.r.caracMax}}" value="{{valeur}}" data-champ="caracs.{{key}}" data-type="number"/></label>
+        {{/each}}
+      </div>
+      <p class="resume">Points de vie : <strong>{{calc.pvMax}}</strong> (20 + Carrure × 3{{#if calc.pvBonus}} + {{calc.pvBonus}} « Gonflette »{{/if}})</p>
+    </section>
+
+    {{!-- 2. Compétences --}}
+    <section class="etape">
+      <h2>
+        <span>2. Compétences</span>
+        <span class="compteur {{#if (copsEq calc.pointsComp r.pointsCompetences)}}ok{{else}}ko{{/if}}">{{calc.pointsComp}} / {{r.pointsCompetences}} points</span>
+        <button type="button" class="mini" data-action="competencesAleatoires" title="Répartition aléatoire (compétences et études)"><i class="fa-solid fa-dice"></i></button>
+      </h2>
+      <p class="aide">
+        Améliorer une compétence de départ : 1 point par niveau (2 niveaux max, {{r.baisseMaxTotale}} points max au total — utilisés : {{calc.baisses}}).
+        Nouvelle compétence : 9+ pour 1 point, 8+ pour 2 points.
+      </p>
+      <label class="ligne">Compétence sociale de départ ({{r.niveauChoixSocial}}+)
+        <select data-champ="choixSocial">
+          {{#each choixSocial}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+        </select>
+      </label>
+      <table class="table-competences">
+        <thead><tr><th>Compétence</th><th>Car.</th><th>Départ</th><th>Niveau</th><th>Final</th><th>Spécialisation</th></tr></thead>
+        <tbody>
+          {{#each competences}}
+          <tr>
+            <td>{{label}}</td>
+            <td class="discret">{{carac}}</td>
+            <td class="discret">{{base}}</td>
+            <td>
+              <select data-champ="competences.{{key}}" data-type="number">
+                {{#each niveaux}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+              </select>
+            </td>
+            <td class="{{#if modifieeParEtudes}}etudes{{/if}}" {{#if modifieeParEtudes}}title="Modifiée par les études"{{/if}}>{{final}}</td>
+            <td>
+              {{#if speRequise}}
+              <input type="text" value="{{specialisation}}" data-champ="specialisations.{{key}}" list="spe-{{key}}" placeholder="obligatoire" class="{{#unless specialisation}}manquante{{/unless}}"/>
+              <datalist id="spe-{{key}}">{{#each suggestions}}<option value="{{this}}"></option>{{/each}}</datalist>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </section>
+
+    {{!-- 3. Historique --}}
+    <section class="etape">
+      <h2><span>3. Historique</span></h2>
+      <div class="colonnes-historique">
+        <div>
+          <h3>Origine sociale</h3>
+          <select data-champ="origine">
+            {{#each origines}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+          </select>
+          <label>Avantage
+            <select data-champ="origineOption">
+              {{#each origineOptions}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+            </select>
+          </label>
+          <p class="aide">{{calc.origine.relation}}</p>
+        </div>
+        <div>
+          <h3>Études <span class="compteur {{#if (copsEq calc.pointsEtudes r.pointsEtudes)}}ok{{else}}ko{{/if}}">{{calc.pointsEtudes}} / {{r.pointsEtudes}}</span></h3>
+          <select data-champ="etude">
+            {{#each etudes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+          </select>
+          <ul class="points-etudes">
+            {{#each etudeCompetences}}
+            <li>
+              <span>{{label}} <em>({{niveau}})</em></span>
+              <select data-champ="etudePoints.{{key}}" data-type="number">
+                {{#each points}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+              </select>
+            </li>
+            {{/each}}
+          </ul>
+          <p class="aide">1 point : −1 niveau, ou compétence acquise à 9+. Jamais mieux que {{r.niveauMinEtudes}}+.</p>
+        </div>
+        <div>
+          <h3>Entrée au COPS</h3>
+          <select data-champ="entree">
+            {{#each entrees}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+          </select>
+          {{#if (copsEq entreePoints.length 1)}}
+          <p class="resume">{{entreePoints.[0].label}}</p>
+          {{else}}
+          <label>Points de départ
+            <select data-champ="entreePoints" data-type="number">
+              {{#each entreePoints}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+            </select>
+          </label>
+          {{/if}}
+          <p class="aide">{{calc.entree.relation}}</p>
+        </div>
+      </div>
+      <h3>Relations</h3>
+      <ul class="relations">
+        {{#each calc.relations}}<li>{{this}}</li>{{/each}}
+      </ul>
+      <textarea rows="2" data-champ="relationsNotes" placeholder="Précisez vos relations (nom, milieu, niveau)… Ce texte sera ajouté à la fiche.">{{etat.relationsNotes}}</textarea>
+    </section>
+
+    {{!-- 4. Stages --}}
+    <section class="etape">
+      <h2><span>4. Stages de départ</span><span class="discret">deux stages de niveau 1, gratuits</span></h2>
+      <label class="ligne case"><input type="checkbox" data-champ="ignorerPrerequis" {{#if etat.ignorerPrerequis}}checked{{/if}}/> Autoriser les stages dont les prérequis ne sont pas remplis (accord du MJ)</label>
+      <div class="colonnes-stages">
+        {{#each stages}}
+        <div class="stage">
+          <select data-champ="stages.{{index}}.id">
+            <option value="">— Choisir un stage —</option>
+            {{#each options}}<option value="{{value}}" {{#if selected}}selected{{/if}} {{#if disabled}}disabled{{/if}}>{{label}}</option>{{/each}}
+          </select>
+          {{#if doc}}
+            {{#if capacites.length}}
+            <label>Capacité spéciale
+              <select data-champ="stages.{{index}}.capacite">
+                <option value="">— Choisir —</option>
+                {{#each capacites}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+              </select>
+            </label>
+            {{/if}}
+            {{#if cibles.length}}
+            <label>Compétence visée
+              <select data-champ="stages.{{index}}.cible">
+                <option value="">— Toutes —</option>
+                {{#each cibles}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+              </select>
+            </label>
+            {{else}}
+            <label>Domaine (milieu, quartier, culture… facultatif)
+              <input type="text" value="{{cible}}" data-champ="stages.{{index}}.cible"/>
+            </label>
+            {{/if}}
+            {{#unless verif.ok}}<p class="ko">Manque : {{#each verif.manques}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>{{/unless}}
+            {{#if verif.aVerifier.length}}<p class="attention">À vérifier : {{#each verif.aVerifier}}{{this}}{{#unless @last}} ; {{/unless}}{{/each}}</p>{{/if}}
+            <div class="description-stage">{{{description}}}</div>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+    </section>
+
+    {{!-- 5. Équipement --}}
+    <section class="etape">
+      <h2><span>5. Équipement</span></h2>
+      <div class="grille-2">
+        <label>Arme de dotation
+          <select data-champ="arme">
+            {{#each armes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+          </select>
+        </label>
+        <label>Holster
+          <select data-champ="holster">
+            {{#each holsters}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+          </select>
+        </label>
+      </div>
+      <p class="liste-objets">{{#each objets}}<span>{{this}}</span>{{/each}}</p>
+    </section>
+
+    {{!-- 6. Finances --}}
+    <section class="etape">
+      <h2><span>6. Salaire et argent</span></h2>
+      <div class="grille-3">
+        <div class="valeur"><span>Salaire mensuel</span><strong>{{salaire}}</strong><em>{{r.grade}}</em></div>
+        <div class="valeur"><span>Revenus annexes / mois</span><strong>{{revenus}}</strong><em>selon l'origine</em></div>
+        <label class="valeur">Argent de départ
+          <input type="number" min="0" step="50" value="{{etat.argent}}" placeholder="{{calc.argentAuto}}" data-champ="argent" data-type="number"/>
+          <em>par défaut : un mois de salaire{{#if calc.option.argent}} + l'argent de l'origine{{/if}} ({{argentAuto}})</em>
+        </label>
+      </div>
+    </section>
+  </div>
+
+  <footer class="creation-pied">
+    {{#if calc.erreurs.length}}
+    <ul class="erreurs">{{#each calc.erreurs}}<li>{{this}}</li>{{/each}}</ul>
+    {{/if}}
+    {{#if calc.avertissements.length}}
+    <ul class="avertissements">{{#each calc.avertissements}}<li>{{this}}</li>{{/each}}</ul>
+    {{/if}}
+    <div class="actions">
+      {{#if aDesObjets}}
+      <label class="case"><input type="checkbox" data-champ="remplacer" {{#if etat.remplacer}}checked{{/if}}/> Supprimer les objets actuels du personnage</label>
+      {{/if}}
+      <button type="button" data-action="creer" {{#if calc.erreurs.length}}disabled{{/if}}><i class="fa-solid fa-check"></i> Créer le cops</button>
+    </div>
+  </footer>
+</div>

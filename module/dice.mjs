@@ -1,5 +1,6 @@
 import { COPS, localisationDepuisJet } from "./config.mjs";
 import { renderTemplate, DialogV2, lireFormulaire } from "./compat.mjs";
+import { effetsPourJet, effetConcerne, libelleEffet } from "./effets-stages.mjs";
 
 const TEMPLATE_TEST = "systems/cops/templates/chat/test.hbs";
 const TEMPLATE_DEGATS = "systems/cops/templates/chat/degats.hbs";
@@ -30,7 +31,11 @@ function modificateursAuto(actor, carac) {
  */
 function seuilDe(actor, competence) {
   if (!competence) return { seuil: 6, critique: true, sansCompetence: false };
-  const valeur = actor.system.competences[competence]?.valeur ?? 0;
+  let valeur = actor.system.competences[competence]?.valeur ?? 0;
+  // « Petit génie » : niveau minimal dans certaines compétences.
+  for (const e of actor.system.effetsStages?.effets ?? []) {
+    if (e.type === "seuilMin" && e.competences.includes(competence) && (!valeur || valeur > e.valeur)) valeur = e.valeur;
+  }
   if (!valeur) return { seuil: 10, critique: false, sansCompetence: true };
   return { seuil: valeur, critique: true, sansCompetence: false };
 }
@@ -42,17 +47,97 @@ function libelleCompetence(actor, competence) {
   return spe ? `${cfg.label} [${spe}]` : cfg.label;
 }
 
-/** Lance Nd10 et compte les réussites (les 10 sont relancés si critique autorisé). */
-async function lancerD10(nbDes, seuil, critique) {
+/**
+ * Lance Nd10 et compte les réussites (les 10 sont relancés si critique autorisé).
+ * Options de stage :
+ *   bleu    le premier dé est un dé bleu : s'il réussit, il apporte une réussite de plus
+ *           (un critique est relancé normalement mais n'ajoute qu'une réussite de plus) ;
+ *   relance un dé en échec (hors dé bleu et hors relances de critiques) est relancé une fois.
+ */
+async function lancerD10(nbDes, seuil, critique, { bleu = false, relance = false } = {}) {
   const s = Math.clamp(seuil, 2, 10);
-  const formule = `${nbDes}d10${critique ? "x" : ""}cs>=${s}`;
-  const roll = await new Roll(formule).evaluate();
-  const des = roll.dice[0].results.map(r => ({
+  const x = critique ? "x" : "";
+  const roll = await new Roll(`${nbDes}d10${x}cs>=${s}`).evaluate();
+  const rolls = [roll];
+  // Les dés d'origine sont les nbDes premiers résultats ; les relances de critiques suivent.
+  const des = roll.dice[0].results.map((r, i) => ({
     valeur: r.result,
     succes: r.result >= s,
-    critique: critique && r.result === 10
+    critique: critique && r.result === 10,
+    bleu: bleu && i === 0
   }));
-  return { roll, des, succes: roll.total };
+  let succes = roll.total;
+  if (bleu && des[0]?.succes) succes += 1;
+
+  if (relance) {
+    const idx = des.findIndex((d, i) => i < nbDes && !d.succes && !d.bleu);
+    if (idx >= 0) {
+      const r2 = await new Roll(`1d10${x}cs>=${s}`).evaluate();
+      rolls.push(r2);
+      des[idx].relance = true;
+      des.push(...r2.dice[0].results.map(r => ({
+        valeur: r.result, succes: r.result >= s, critique: critique && r.result === 10, nouveau: true
+      })));
+      succes += r2.total;
+    }
+  }
+  return { roll, rolls, des, succes };
+}
+
+/**
+ * Applique les effets de stage (automatiques + optionnels cochés) à un jet :
+ * dés bonus ajoutés aux modificateurs, et options de lancer (dé bleu, relance).
+ */
+function effetsDeStage(actor, jet, choisis = [], mods) {
+  const analyse = actor.system.effetsStages;
+  if (!analyse) return { options: {}, notes: [] };
+  const { auto, optionnels } = effetsPourJet(analyse, jet);
+  const actifs = [...auto, ...optionnels.filter(e => choisis.includes(e.id))];
+  const notes = [];
+  for (const e of actifs) {
+    if (e.type === "desBonus") mods.push({ label: e.source, valeur: e.valeur });
+    else notes.push(`${libelleEffet(e)} — ${e.source}`);
+  }
+  return {
+    options: { bleu: actifs.some(e => e.type === "deBleu"), relance: actifs.some(e => e.type === "relance") },
+    notes
+  };
+}
+
+/** Options à cocher proposées dans un dialogue de jet. */
+function optionsDeStage(actor, jet) {
+  const analyse = actor.system.effetsStages;
+  if (!analyse) return [];
+  return effetsPourJet(analyse, jet).optionnels.map(e => ({
+    id: e.id, label: `${e.condition} : ${libelleEffet(e)}`, source: e.source
+  }));
+}
+
+/** Nombre de points d'Adrénaline dépensables d'un coup (« Hyper réactif » : tous). */
+function adrenalineMax(actor) {
+  const sys = actor.system;
+  const multi = sys.effetsStages?.effets.some(e => e.type === "adrenalineMulti");
+  return multi ? sys.adrenaline.value : Math.min(1, sys.adrenaline.value);
+}
+
+/** Dépense l'adrénaline demandée (nombre ou case cochée) et l'ajoute aux modificateurs. */
+async function depenserAdrenaline(actor, demande, mods) {
+  const n = Math.min(Number(demande) || 0, adrenalineMax(actor));
+  if (!n) {
+    if (Number(demande)) ui.notifications.warn("Plus de points d'adrénaline.");
+    return;
+  }
+  await actor.update({ "system.adrenaline.value": actor.system.adrenaline.value - n });
+  mods.push({ label: "Adrénaline", valeur: n });
+}
+
+/** Les cases « effets de stage » cochées dans un formulaire. */
+function effetsCoches(data) {
+  return Object.entries(data).filter(([k, v]) => k.startsWith("stage-") && v).map(([k]) => k.slice(6));
+}
+
+function ancienneteDouble(actor, jet) {
+  return !!actor.system.effetsStages?.effets.some(e => e.type === "ancienneteDouble" && effetConcerne(e, jet));
 }
 
 function resultat(ctx) {
@@ -105,6 +190,9 @@ export async function dialogueTest(actor, { carac = null, competence = null } = 
     carac,
     competence: competence ?? "",
     adrenaline: actor.system.adrenaline.value,
+    adrenalineMax: adrenalineMax(actor),
+    adrenalineMulti: adrenalineMax(actor) > 1,
+    optionsStages: optionsDeStage(actor, { carac, competence }),
     difficulte: 1
   });
 
@@ -126,27 +214,24 @@ export async function dialogueTest(actor, { carac = null, competence = null } = 
     difficulte: data.difficulte,
     modDes: data.modDes,
     modSeuil: data.modSeuil,
-    adrenaline: data.adrenaline
+    adrenaline: data.adrenaline,
+    effets: effetsCoches(data)
   });
 }
 
-export async function lancerTest(actor, { carac, competence = null, difficulte = 1, modDes = 0, modSeuil = 0, adrenaline = false, titre = null }) {
+export async function lancerTest(actor, { carac, competence = null, difficulte = 1, modDes = 0, modSeuil = 0, adrenaline = 0, effets = [], titre = null }) {
   const sys = actor.system;
   const mods = modificateursAuto(actor, carac);
   if (modDes) mods.push({ label: "Modificateur", valeur: modDes });
+  const jet = { carac, competence };
+  const stage = effetsDeStage(actor, jet, effets, mods);
 
-  if (adrenaline) {
-    const autorise = !competence || COPS.competences[competence].adrenaline;
-    if (!autorise) {
-      ui.notifications.warn("L'adrénaline ne peut pas être utilisée avec cette compétence.");
-      adrenaline = false;
-    } else if (sys.adrenaline.value < 1) {
-      ui.notifications.warn("Plus de points d'adrénaline.");
-      adrenaline = false;
-    } else {
-      await actor.update({ "system.adrenaline.value": sys.adrenaline.value - 1 });
-      mods.push({ label: "Adrénaline", valeur: 1 });
-    }
+  if (Number(adrenaline)) {
+    // « Combat de localité » : l'adrénaline devient utilisable sur certaines compétences.
+    const parStage = sys.effetsStages?.effets.some(e => e.type === "adrenaline" && e.competences.includes(competence));
+    const autorise = !competence || COPS.competences[competence].adrenaline || parStage;
+    if (!autorise) ui.notifications.warn("L'adrénaline ne peut pas être utilisée avec cette compétence.");
+    else await depenserAdrenaline(actor, adrenaline, mods);
   }
 
   const base = sys.caracteristiques[carac];
@@ -165,7 +250,9 @@ export async function lancerTest(actor, { carac, competence = null, difficulte =
     seuil,
     sansCompetence,
     difficulte: Number(difficulte) || 0,
-    ancienneteUtilisee: 0
+    ancienneteUtilisee: 0,
+    ancienneteDouble: ancienneteDouble(actor, jet),
+    notesStages: stage.notes
   };
 
   if (nbDes < 1) {
@@ -178,11 +265,11 @@ export async function lancerTest(actor, { carac, competence = null, difficulte =
     return creerMessage(actor, ctx, []);
   }
 
-  const { roll, des, succes } = await lancerD10(nbDes, seuil, critique);
+  const { rolls, des, succes } = await lancerD10(nbDes, seuil, critique, stage.options);
   ctx.des = des;
   ctx.succes = succes;
   resultat(ctx);
-  return creerMessage(actor, ctx, [roll]);
+  return creerMessage(actor, ctx, rolls);
 }
 
 /* -------------------------------------------- */
@@ -207,7 +294,13 @@ export async function dialogueAttaque(actor, arme) {
     initiative: sys.combat.initiative,
     ctOptions,
     adrenaline: sys.adrenaline.value,
-    munitions: a.munitions
+    adrenalineMax: adrenalineMax(actor),
+    adrenalineMulti: adrenalineMax(actor) > 1,
+    munitions: a.munitions,
+    optionsStages: optionsDeStage(actor, { carac: COPS.competences[a.competence].carac, competence: a.competence }),
+    visees: optionsVisee(actor, distance),
+    rafaleMaitrisee: a.vrc > 0 && sys.effetsStages?.rafaleMaitrisee,
+    bonusStages: resumeBonusArme(actor, arme)
   });
 
   const data = await DialogV2().prompt({
@@ -222,6 +315,29 @@ export async function dialogueAttaque(actor, arme) {
   });
   if (!data) return;
   return lancerAttaque(actor, arme, data);
+}
+
+/** Tirs visés offerts par les capacités « Tir incapacitant » et « Sniper » (+2 en difficulté). */
+function optionsVisee(actor, distance) {
+  const st = actor.system.effetsStages;
+  if (!distance || !st) return [];
+  const opts = [];
+  if (st.tirIncapacitant) {
+    opts.push({ value: "bras", label: "Tir incapacitant : bras (+2 diff.)" }, { value: "jambes", label: "Tir incapacitant : jambe (+2 diff.)" });
+  }
+  if (st.sniper) {
+    for (const [k, l] of Object.entries(COPS.localisations)) opts.push({ value: `sniper-${k}`, label: `Sniper (après un tour à viser) : ${l.label} (+2 diff.)` });
+  }
+  return opts.length ? [{ value: "", label: "— Tir normal —" }, ...opts] : [];
+}
+
+function resumeBonusArme(actor, arme) {
+  const b = actor.system.effetsStages?.bonusArme(arme);
+  if (!b || (!b.degats && !b.loc)) return "";
+  const parties = [];
+  if (b.degats) parties.push(`+${b.degats} dommages`);
+  if (b.loc) parties.push(`±${b.loc} localisation`);
+  return `${parties.join(" et ")} (${b.sources.join(", ")}), dans la limite de la marge de réussite${b.cumul ? " (cumulables)" : ""}`;
 }
 
 export async function lancerAttaque(actor, arme, opts) {
@@ -254,22 +370,28 @@ export async function lancerAttaque(actor, arme, opts) {
     if (numero > 1) mods.push({ label: `Tir n°${numero} du tour`, valeur: -(numero - 1) });
   }
   if (opts.modDes) mods.push({ label: "Modificateur", valeur: opts.modDes });
-
-  if (opts.adrenaline) {
-    if (sys.adrenaline.value < 1) ui.notifications.warn("Plus de points d'adrénaline.");
-    else {
-      await actor.update({ "system.adrenaline.value": sys.adrenaline.value - 1 });
-      mods.push({ label: "Adrénaline", valeur: 1 });
-    }
-  }
+  const jet = { carac, competence };
+  const stage = effetsDeStage(actor, jet, effetsCoches(opts), mods);
+  if (Number(opts.adrenaline)) await depenserAdrenaline(actor, opts.adrenaline, mods);
 
   let difficulte = 0;
+  let locForcee = null;
   if (distance) {
     difficulte = COPS.distances[opts.distance]?.difficulte ?? 2;
     difficulte -= Number(opts.attitudeCible) || 0;
     difficulte += Number(opts.modDifficulte) || 0;
+    // Tir visé (« Tir incapacitant », « Sniper ») : +2 en difficulté, localisation choisie.
+    if (opts.visee && optionsVisee(actor, true).some(o => o.value === opts.visee)) {
+      difficulte += 2;
+      locForcee = opts.visee.replace("sniper-", "");
+      stage.notes.push(`Tir visé : ${COPS.localisations[locForcee].label} (+2 difficulté)`);
+    }
     difficulte = Math.max(1, difficulte);
   }
+  const bonusArme = sys.effetsStages?.bonusArme(arme) ?? { degats: 0, loc: 0, cumul: false, sources: [] };
+  const pointFaible = !!(distance && sys.effetsStages?.pointFaible);
+  const memeLoc = !!(rafale && opts.rafaleMaitrisee && sys.effetsStages?.rafaleMaitrisee);
+  if (memeLoc) stage.notes.push("Rafale maîtrisée : toutes les balles dans la même localisation");
 
   const base = sys.caracteristiques[carac];
   const nbDes = base + mods.reduce((t, m) => t + m.valeur, 0);
@@ -295,6 +417,13 @@ export async function lancerAttaque(actor, arme, opts) {
     dommagesSpeciaux: a.dommagesSpeciaux,
     consommees: opts.consommer ? consommees : 0,
     ancienneteUtilisee: 0,
+    ancienneteDouble: ancienneteDouble(actor, jet),
+    notesStages: stage.notes,
+    locForcee,
+    memeLoc,
+    stage: (bonusArme.degats || bonusArme.loc || pointFaible)
+      ? { degats: bonusArme.degats, loc: bonusArme.loc, cumul: bonusArme.cumul, pointFaible, sources: bonusArme.sources.join(", ") }
+      : null,
     impacts: []
   };
 
@@ -308,11 +437,11 @@ export async function lancerAttaque(actor, arme, opts) {
     return creerMessage(actor, ctx, []);
   }
 
-  const { roll, des, succes } = await lancerD10(nbDes, seuil, critique);
-  ctx.des = des;
-  ctx.succes = succes;
+  const lancer = await lancerD10(nbDes, seuil, critique, stage.options);
+  ctx.des = lancer.des;
+  ctx.succes = lancer.succes;
   resultat(ctx);
-  const rolls = [roll];
+  const rolls = [...lancer.rolls];
   if (ctx.issue !== "echec") rolls.push(...(await construireImpacts(ctx)));
   return creerMessage(actor, ctx, rolls);
 }
@@ -340,36 +469,87 @@ async function construireImpacts(ctx) {
     return rolls;
   }
 
-  const rLoc = await new Roll("1d10").evaluate();
-  rolls.push(rLoc);
+  // Un tir visé n'a pas besoin de jet de localisation.
+  const rLoc = ctx.locForcee ? null : await new Roll("1d10").evaluate();
+  if (rLoc) rolls.push(rLoc);
   ctx.impacts = [];
   for (let i = 0; i < nbBalles; i++) {
-    const jet = rLoc.total + i;
+    // Rafale : +1 à la localisation par balle (sauf « Rafale maîtrisée » ou tir visé).
+    const jet = rLoc ? rLoc.total + (ctx.memeLoc ? 0 : i) : null;
     if (jet > 10) {
       ctx.impacts.push({ index: i, numero: i + 1, rate: true, locJet: jet, locLabel: "Balle perdue (> 10)" });
       continue;
     }
-    const loc = localisationDepuisJet(jet);
-    const cfg = COPS.localisations[loc];
     // Puissance nulle (Taser…) : pas de dommages mais la force d'arrêt s'applique.
     let rDeg = null;
     if (ctx.puissance > 0) {
       rDeg = await new Roll(`${ctx.puissance}d6${ctx.relanceUn ? "rr1" : ""}`).evaluate();
       rolls.push(rDeg);
     }
-    ctx.impacts.push({
+    const impact = {
       index: i,
       localise: true,
-      locJet: jet,
-      loc,
-      locLabel: cfg.label,
-      locMod: cfg.mod,
-      degats: rDeg?.total ?? 0,
-      detailDegats: rDeg?.dice[0]?.results.filter(r => r.active).map(r => r.result).join(", ") ?? "",
-      faDiff: ctx.forceArret + cfg.mod
-    });
+      locJetBase: jet,
+      locShift: 0,
+      degatsBase: rDeg?.total ?? 0,
+      bonusDeg: 0,
+      ignoreArmure: false,
+      detailDegats: rDeg?.dice[0]?.results.filter(r => r.active).map(r => r.result).join(", ") ?? ""
+    };
+    // Bonus de dommages des stages, appliqué d'office dans la limite de la marge (tir à distance).
+    if (ctx.stage?.degats && ctx.difficulte > 0) impact.bonusDeg = Math.min(ctx.stage.degats, budgetStage(ctx));
+    recalculerImpact(ctx, impact);
+    ctx.impacts.push(impact);
   }
   return rolls;
+}
+
+/** Marge disponible pour les bonus de stage (illimitée en opposition : à vérifier face à l'adversaire). */
+function budgetStage(ctx) {
+  return ctx.difficulte > 0 ? Math.max(0, ctx.marge) : Infinity;
+}
+
+/** Points de marge consommés par les bonus d'un impact (niveau 3 : dommages et localisation se cumulent). */
+function coutStage(ctx, imp) {
+  const deg = imp.bonusDeg, loc = Math.abs(imp.locShift);
+  return (ctx.stage?.cumul ? Math.max(deg, loc) : deg + loc) + (imp.ignoreArmure ? 2 : 0);
+}
+
+/** Recalcule localisation, dommages et FA d'un impact à partir de ses valeurs de base et des bonus. */
+function recalculerImpact(ctx, imp) {
+  if (ctx.locForcee) {
+    imp.loc = ctx.locForcee;
+    imp.locJet = "visé";
+  } else {
+    imp.locJet = Math.clamp(imp.locJetBase + imp.locShift, 1, 10);
+    imp.loc = localisationDepuisJet(imp.locJet);
+  }
+  const cfg = COPS.localisations[imp.loc];
+  imp.locLabel = cfg.label;
+  imp.locMod = cfg.mod;
+  imp.degats = imp.degatsBase + imp.bonusDeg;
+  imp.faDiff = ctx.forceArret + cfg.mod;
+  if (ctx.stage) {
+    imp.stageReste = budgetStage(ctx) === Infinity ? null : budgetStage(ctx) - coutStage(ctx, imp);
+    imp.peutLoc = !!ctx.stage.loc && !ctx.locForcee;
+  }
+  return imp;
+}
+
+/** Boutons de la carte : ajuster les bonus de stage d'un impact (dommages, localisation, Point faible). */
+async function ajusterImpact(message, index, champ, delta) {
+  if (!message.isOwner) return ui.notifications.warn("Seul l'auteur du jet peut répartir sa marge.");
+  const ctx = foundry.utils.deepClone(message.getFlag("cops", "contexte"));
+  const imp = ctx.impacts?.[index];
+  if (!ctx.stage || !imp || imp.rate) return;
+  const essai = { ...imp };
+  if (champ === "deg") essai.bonusDeg = Math.clamp(imp.bonusDeg + delta, 0, ctx.stage.degats);
+  else if (champ === "loc") essai.locShift = Math.clamp(imp.locShift + delta, -ctx.stage.loc, ctx.stage.loc);
+  else if (champ === "pf") essai.ignoreArmure = !imp.ignoreArmure;
+  if (coutStage(ctx, essai) > budgetStage(ctx)) return ui.notifications.warn("Marge de réussite insuffisante pour ce bonus.");
+  ctx.impacts[index] = recalculerImpact(ctx, essai);
+  const content = await renderTemplate(TEMPLATE_TEST, ctx);
+  await message.update({ content, "flags.cops.contexte": ctx });
 }
 
 /* -------------------------------------------- */
@@ -384,8 +564,10 @@ async function utiliserAnciennete(message) {
   if (actor.system.anciennete.value < 1) return ui.notifications.warn("Plus de points d'ancienneté.");
 
   await actor.update({ "system.anciennete.value": actor.system.anciennete.value - 1 });
-  ctx.succes += 1;
-  ctx.ancienneteUtilisee += 1;
+  // « Opération ninja blanc » : un point d'Ancienneté vaut 2 réussites sur les jets physiques et de Sang-froid.
+  const gain = ctx.ancienneteDouble ? 2 : 1;
+  ctx.succes += gain;
+  ctx.ancienneteUtilisee += gain;
   resultat(ctx);
   // L'ancienneté ne peut que ramener la marge à 0.
   if (ctx.issue === "reussite") ctx.marge = 0;
@@ -447,7 +629,9 @@ async function appliquerImpact(message, index) {
       faDiff: impact.faDiff
     };
 
-    if (impact.localise) {
+    if (impact.ignoreArmure) {
+      res.protectionNoms = "ignorée (Point faible)";
+    } else if (impact.localise) {
       const p = protectionPour(cible, impact.loc);
       if (p.des || p.bonus) {
         const r = await new Roll(`${p.des}d6 + ${p.bonus}`).evaluate();
@@ -495,7 +679,9 @@ export async function jetForceArret(actor, difficulte) {
   const sys = actor.system;
   const carac = sys.caracteristiques.carrure >= sys.caracteristiques.sangfroid ? "carrure" : "sangfroid";
   const nbDes = sys.caracteristiques[carac];
-  const { roll, des, succes } = await lancerD10(nbDes, 6, true);
+  // « Solide comme l'acier » : un dé bleu aux jets d'encaissement.
+  const bleu = !!sys.effetsStages?.effets.some(e => e.type === "encaissement");
+  const { rolls, des, succes } = await lancerD10(nbDes, 6, true, { bleu });
   const ctx = {
     type: "forceArret",
     actorUuid: actor.uuid,
@@ -508,13 +694,15 @@ export async function jetForceArret(actor, difficulte) {
     difficulte,
     des,
     succes,
-    ancienneteUtilisee: 0
+    ancienneteUtilisee: 0,
+    ancienneteDouble: ancienneteDouble(actor, { carac, competence: null }),
+    notesStages: bleu ? ["1 dé bleu — Solide comme l'acier"] : []
   };
   resultat(ctx);
   if (ctx.issue === "reussite") ctx.note = "Tient le choc : initiative non négative au prochain tour.";
   else if (succes > 0) ctx.note = "Sonné : -1 dé à la prochaine action et initiative non négative au prochain tour.";
   else ctx.note = "Hors de combat ! Nouveau jet à chaque tour (difficulté -1 par tour après le premier).";
-  return creerMessage(actor, ctx, [roll]);
+  return creerMessage(actor, ctx, rolls);
 }
 
 /* -------------------------------------------- */
@@ -535,6 +723,9 @@ export function activerBoutonsChat(message, html) {
             break;
           case "appliquer":
             await appliquerImpact(message, Number(btn.dataset.index));
+            break;
+          case "stage":
+            await ajusterImpact(message, Number(btn.dataset.index), btn.dataset.champ, Number(btn.dataset.delta) || 0);
             break;
           case "force-arret": {
             const actor = await fromUuid(btn.dataset.actor);

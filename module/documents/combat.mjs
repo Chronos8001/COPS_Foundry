@@ -7,6 +7,10 @@ export class CopsCombat extends Combat {
     const ia = Number.isNumeric(a.initiative) ? a.initiative : Infinity;
     const ib = Number.isNumeric(b.initiative) ? b.initiative : Infinity;
     if (ia !== ib) return ia - ib;
+    // « Tir instinctif » remporte toujours les égalités d'initiative.
+    const ta = a.actor?.system.effetsStages?.tirInstinctif ? 1 : 0;
+    const tb = b.actor?.system.effetsStages?.tirInstinctif ? 1 : 0;
+    if (ta !== tb) return tb - ta;
     const ra = a.actor?.system.caracteristiques?.reflexes ?? 0;
     const rb = b.actor?.system.caracteristiques?.reflexes ?? 0;
     if (ra !== rb) return rb - ra;

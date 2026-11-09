@@ -2,7 +2,7 @@
   "id": "cops",
   "title": "COPS",
   "description": "Système non officiel pour le jeu de rôle COPS (Los Angeles 2030) : fiches de personnage, jets de compétences en d10, combat (localisation, puissance, force d'arrêt), adrénaline et ancienneté.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "authors": [
     { "name": "Chronos8001" }
   ],
@@ -52,13 +52,21 @@
       "type": "Item",
       "system": "cops",
       "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" }
+    },
+    {
+      "name": "stages",
+      "label": "Stages (niveaux 1 à 3)",
+      "path": "packs/stages",
+      "type": "Item",
+      "system": "cops",
+      "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" }
     }
   ],
   "packFolders": [
     {
       "name": "COPS",
       "sorting": "m",
-      "packs": ["armes", "armures", "equipement"]
+      "packs": ["armes", "armures", "equipement", "stages"]
     }
   ],
   "grid": { "distance": 1, "units": "m" },
@@ -67,5 +75,5 @@
   "initiative": "0",
   "url": "https://github.com/Chronos8001/COPS_Foundry",
   "manifest": "https://github.com/Chronos8001/COPS_Foundry/releases/latest/download/system.json",
-  "download": "https://github.com/Chronos8001/COPS_Foundry/releases/download/v0.1.0/cops.zip"
+  "download": "https://github.com/Chronos8001/COPS_Foundry/releases/download/v0.2.0/cops.zip"
 }

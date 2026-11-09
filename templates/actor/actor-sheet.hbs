@@ -3,13 +3,18 @@
     <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" height="110" width="110"/>
     <div class="header-fields">
       <h1 class="charname"><input name="name" type="text" value="{{actor.name}}" placeholder="Nom"/></h1>
-      <div class="identite grid grid-3col">
+      <div class="identite grid grid-4col">
         <label>Grade<input type="text" name="system.identite.grade" value="{{system.identite.grade}}"/></label>
         <label>Âge<input type="text" name="system.identite.age" value="{{system.identite.age}}"/></label>
         <label>Origine<input type="text" name="system.identite.origine" value="{{system.identite.origine}}"/></label>
         <label>Affectation<input type="text" name="system.identite.affectation" value="{{system.identite.affectation}}"/></label>
         <label>Partenaire<input type="text" name="system.identite.partenaire" value="{{system.identite.partenaire}}"/></label>
-        <label>Salaire<input type="text" name="system.identite.salaire" value="{{system.identite.salaire}}"/></label>
+        <label title="Salaire de base ; les primes de stage s'ajoutent à la paie">Salaire ($/mois){{#unless (copsEq system.finances.salaireTotal system.finances.salaire)}} → {{system.finances.salaireTotal}} avec primes{{/unless}}<input type="number" name="system.finances.salaire" value="{{system.finances.salaire}}" data-dtype="Number" min="0"/></label>
+        <label>Revenus annexes ($/mois)<input type="number" name="system.finances.revenus" value="{{system.finances.revenus}}" data-dtype="Number" min="0"/></label>
+        <label>
+          <span>Argent ($) {{#if editable}}<a class="paie" data-paie title="Ajouter le salaire et les revenus du mois"><i class="fa-solid fa-sack-dollar"></i> Paie</a>{{/if}}</span>
+          <input type="number" name="system.finances.argent" value="{{system.finances.argent}}" data-dtype="Number"/>
+        </label>
       </div>
     </div>
   </header>

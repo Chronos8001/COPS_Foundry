@@ -1,6 +1,7 @@
 import { COPS } from "../config.mjs";
 import { ActorSheetV1, TextEditorImpl } from "../compat.mjs";
 import { dialogueTest, dialogueAttaque } from "../dice.mjs";
+import { ouvrirCreation } from "../apps/creation.mjs";
 
 export class CopsActorSheet extends ActorSheetV1() {
   static get defaultOptions() {
@@ -103,6 +104,26 @@ export class CopsActorSheet extends ActorSheetV1() {
       }));
     root.querySelectorAll("[data-repos]").forEach(el =>
       el.addEventListener("click", () => this._nuitDeRepos()));
+    root.querySelectorAll("[data-paie]").forEach(el =>
+      el.addEventListener("click", () => this._paie()));
+  }
+
+  /** Bouton « Création » dans la barre de titre des cops. */
+  _getHeaderButtons() {
+    const boutons = super._getHeaderButtons();
+    if (this.actor.type === "cop" && this.actor.isOwner) {
+      boutons.unshift({ label: "Création", class: "cops-creation", icon: "fa-solid fa-id-card", onclick: () => ouvrirCreation(this.actor) });
+    }
+    return boutons;
+  }
+
+  /** Ajoute le salaire et les revenus annexes du mois à l'argent disponible. */
+  async _paie() {
+    const f = this.actor.system.finances;
+    const gain = f.salaireTotal + f.revenus;
+    if (!gain) return ui.notifications.info("Aucun salaire ni revenu à verser.");
+    await this.actor.update({ "system.finances.argent": f.argent + gain });
+    ui.notifications.info(`${this.actor.name} touche ${gain.toLocaleString("fr-FR")} $.`);
   }
 
   /** Une nuit de repos : +1 point d'adrénaline ou d'ancienneté (au choix), dans la limite de 5 au total. */
@@ -135,7 +156,7 @@ export class CopsActorSheet extends ActorSheetV1() {
       formData["system.anciennete.value"] = sys.anciennete.value;
     }
     const reflexes = formData["system.caracteristiques.reflexes"] ?? sys.caracteristiques.reflexes;
-    const min = COPS.initiativeMin[reflexes] ?? -2;
+    const min = sys.effetsStages?.tirInstinctif ? -2 : (COPS.initiativeMin[reflexes] ?? -2);
     if ((formData["system.combat.initiative"] ?? sys.combat.initiative) < min) {
       formData["system.combat.initiative"] = min;
     }

@@ -55,8 +55,18 @@
     <label>Modificateur de dés</label>
     <input type="number" name="modDes" value="0"/>
   </div>
+  {{#if visees.length}}
   <div class="form-group">
-    <label>Dépenser 1 point d'adrénaline (+1 dé) — reste {{adrenaline}}</label>
-    <input type="checkbox" name="adrenaline" {{#unless adrenaline}}disabled{{/unless}}/>
+    <label>Tir visé (stage)</label>
+    <select name="visee">{{#each visees}}<option value="{{value}}">{{label}}</option>{{/each}}</select>
   </div>
+  {{/if}}
+  {{#if rafaleMaitrisee}}
+  <div class="form-group">
+    <label>Rafale maîtrisée : toutes les balles au même endroit</label>
+    <input type="checkbox" name="rafaleMaitrisee"/>
+  </div>
+  {{/if}}
+  {{#if bonusStages}}<p class="aide">Stages : {{bonusStages}}. Répartissez la marge sur la carte de résultat.</p>{{/if}}
+  {{> "systems/cops/templates/dialog/parts/stages.hbs"}}
 </div>

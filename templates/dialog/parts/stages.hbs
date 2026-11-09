@@ -1,0 +1,19 @@
+{{#if adrenalineMulti}}
+<div class="form-group">
+  <label>Points d'adrénaline à dépenser (+1 dé chacun, « Hyper réactif ») — reste {{adrenaline}}</label>
+  <input type="number" name="adrenaline" value="0" min="0" max="{{adrenalineMax}}"/>
+</div>
+{{else}}
+<div class="form-group">
+  <label>Dépenser 1 point d'adrénaline (+1 dé) — reste {{adrenaline}}</label>
+  <input type="checkbox" name="adrenaline" {{#unless adrenaline}}disabled{{/unless}}/>
+</div>
+{{/if}}
+{{#if optionsStages.length}}
+<fieldset class="options-stages">
+  <legend>Bonus de stage (si la situation s'y prête)</legend>
+  {{#each optionsStages}}
+  <label class="option-stage" title="{{source}}"><input type="checkbox" name="stage-{{id}}"/> {{label}}</label>
+  {{/each}}
+</fieldset>
+{{/if}}
